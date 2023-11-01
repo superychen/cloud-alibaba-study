@@ -1,0 +1,16 @@
+server:
+  port: 10086
+
+#与sentinel进行一个整合
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: 127.0.0.1:8080
+
+#将所有的web节点全部暴露给sentinel，让它可以监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

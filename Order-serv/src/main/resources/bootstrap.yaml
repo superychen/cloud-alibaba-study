@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: order-serv #这里需要跟nacos配置中dataId保持一致
+  profiles:
+    active: prod #表示我需要向配置中心所要的生产环境的配置
+
+  cloud:
+    nacos:
+      config:
+#        namespace: public
+        serverAddr: 127.0.0.1:8848 #配置中心的地址
+        fileExtension: yaml #文件的后缀名
+        sharedConfigs[0]: #不同服务间如果要共享配置文件的话
+          dataId: redis.yaml #这里我在nacos上新建的一个dataId为redis.yaml
+          group: DEFAULT_GROUP #这里是有个默认值，如果没改动group，可以不用写这个
+          refresh: true #默认为false，判断是否动态刷新
+        sharedconfigs[1]:
+          dataId: mq.yaml
+          refresh: true
