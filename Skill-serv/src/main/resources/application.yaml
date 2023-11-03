@@ -1,11 +1,11 @@
-server:
-  port: 9000
+ server:
+   port: 13000
 
 spring:
   cloud:
     nacos:
       discovery:
-        service: product-serv
+        service: skill-serv
         serverAddr: 10.211.55.3:8848 #nacos地址
   datasource:
     url: jdbc:mysql://10.211.55.3:3306/ali_cloud_study
