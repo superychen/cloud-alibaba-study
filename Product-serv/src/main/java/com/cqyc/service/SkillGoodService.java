@@ -2,6 +2,7 @@ package com.cqyc.service;
 
 import com.cqyc.dao.SkillGoodRepository;
 import com.cqyc.entity.SkillGood;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +24,9 @@ public class SkillGoodService {
     private RedisTemplate redisTemplate;
 
     public static final String SKILL_GOODS_PHONE = "SKILL_GOODS_PHONE";
+
+    public static final String SKILL_STOCK_GOODS_QUEUE = "SKILL_STOCK_GOODS_QUEUE";
+
 
     @Autowired
     private SkillGoodRepository skillGoodRepository;
@@ -51,6 +55,7 @@ public class SkillGoodService {
         if(!CollectionUtils.isEmpty(list)) {
             for (SkillGood skillGood : list) {
                 redisTemplate.boundHashOps(SKILL_GOODS_PHONE).put(skillGood.getId(), skillGood);
+                redisTemplate.boundListOps(SKILL_STOCK_GOODS_QUEUE+ skillGood.getId()).leftPushAll(convertToArray(skillGood.getStockCount(), skillGood.getId()));
             }
         }
 
@@ -61,6 +66,14 @@ public class SkillGoodService {
             System.out.println(skillGood.getName() + "库存剩余：" + skillGood.getStockCount());
         }
 
+    }
+
+    private Long[] convertToArray(Integer stockCount, Long id) {
+        Long[] idsLong = new Long[stockCount];
+        for (int i = 0; i < stockCount; i++) {
+            idsLong[i] = id;
+        }
+        return idsLong;
     }
 
     public SkillGood queryProduct(Long productId) {

@@ -60,12 +60,12 @@ public class OrderController {
 
     public static void main(String[] args) {
         //第一期开奖号码
-        List<Integer> compareBlueInts = Lists.newArrayList(10,24,26,28,29,31);
-        int redInt = 16;
+        List<Integer> compareBlueInts = Lists.newArrayList(3,8,19,22,26,32);
+        int redInt = 14;
         Long num = 0L;
 //        caiPiaoCompute(compareBlueInts, redInt, num);
         for (int i = 0; i < 10; i++) {
-            buyCaiPiao(1797162, 39);
+            buyCaiPiao(231106, 1);
         }
     }
 

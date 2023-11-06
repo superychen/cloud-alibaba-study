@@ -1,6 +1,7 @@
 package com.cqyc.service;
 
 import com.cqyc.dao.SkillOrderRepository;
+import com.cqyc.entity.SkillEntity;
 import com.cqyc.entity.SkillGood;
 import com.cqyc.entity.SkillOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author cqyc
@@ -27,31 +29,39 @@ public class SkillGoodService {
     private RedisTemplate redisTemplate;
 
     public static final String SKILL_GOODS_PHONE = "SKILL_GOODS_PHONE";
+    public static final String SKILL_GOODS_List = "SKILL_GOODS_List";
+    public static final String SKILL_GOODS_ONLY = "SKILL_GOODS_ONLY";
 
+    public static final String SKILL_STOCK_GOODS_QUEUE = "SKILL_STOCK_GOODS_QUEUE";
+
+    @Autowired
+    private MultiThreadOrder multiThreadOrder;
+
+    /**
+     * 重复抢单问题分析和实现
+     *  一个用户只能有一个排队信息存在
+     *  一个用户会存在多个未支付的订单
+     */
     @Transactional
     public void add(Long productId, String userId) throws Exception{
-        SkillGood skillGood = productService.queryByProductId(productId);
-        if(skillGood == null) {
-            throw new Exception("商品已经被抢光啦");
+        userId = UUID.randomUUID().toString();
+        //判断这个用户是否参加过抢单，redis自增命令相当于atomicInteger一样，能保证原子性
+        Long time = redisTemplate.boundHashOps(SKILL_GOODS_ONLY).increment(userId, 1L);
+        if(time > 1) {
+            throw new Exception("重复抢单，不要太贪心！！");
         }
-        if(skillGood.getStockCount() > 0) {
-            SkillOrder skillOrder = new SkillOrder();
-            skillOrder.setSkillId(productId);
-            skillOrder.setMoney(skillGood.getCostPrice());
-            skillOrder.setUserId(userId);
-            skillOrder.setCreateTime(new Date());
-            skillOrder.setPayTime(new Date());
-            skillOrder.setStatus("0");
-            skillOrderRepository.save(skillOrder);
-            skillGood.setStockCount(skillGood.getStockCount() - 1);
-            redisTemplate.boundHashOps(SKILL_GOODS_PHONE).put(skillGood.getId(), skillGood);
-            System.out.println("成功秒杀 剩余库存： " + skillGood.getStockCount());
-        }
-        if(skillGood.getStockCount() <= 0) {
-            System.out.println("库存已经是负数了：" + skillGood.getStockCount());
-            redisTemplate.boundHashOps(SKILL_GOODS_PHONE).delete(skillGood.getId());
-            productService.update(skillGood);
-        }
+
+        //开始异步秒杀
+        //第一步先封装对象，并且放入redis队列中
+        SkillEntity entity = new SkillEntity();
+        entity.setProductId(productId);
+        entity.setUserId(userId);
+        //从左侧插入数据，然后从右侧去除数据
+        redisTemplate.boundListOps(SKILL_GOODS_List).leftPush(entity);
+        //然后开始异步进行抢单，这里将同步代码放入异步里面
+        multiThreadOrder.createOrder();
+        System.out.println("同步开始!");
+
 
     }
 
