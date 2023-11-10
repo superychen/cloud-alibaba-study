@@ -60,12 +60,12 @@ public class OrderController {
 
     public static void main(String[] args) {
         //第一期开奖号码
-        List<Integer> compareBlueInts = Lists.newArrayList(3,8,19,22,26,32);
-        int redInt = 14;
+        List<Integer> compareBlueInts = Lists.newArrayList(8,9,12,17,32,33);
+        int redInt = 4;
         Long num = 0L;
-//        caiPiaoCompute(compareBlueInts, redInt, num);
+        Map<String, Integer> map = caiPiaoCompute(compareBlueInts, redInt, num);
         for (int i = 0; i < 10; i++) {
-            buyCaiPiao(231106, 1);
+            buyCaiPiao(map.get("red"), map.get("blue"));
         }
     }
 
@@ -111,7 +111,9 @@ public class OrderController {
         System.out.println(resStr);
     }
 
-    public static void caiPiaoCompute(List<Integer> compareBlueInts, Integer redInt, Long num) {
+    public static Map<String, Integer> caiPiaoCompute(List<Integer> compareBlueInts, Integer redInt, Long num) {
+        Map<String, Integer> resMap = new HashMap<>();
+
         List<Integer> resInts = new ArrayList<>();
         Random random = new Random();
         boolean flag = true;
@@ -147,6 +149,9 @@ public class OrderController {
         }
         System.out.println("计算次数： " + num2);
         System.out.println(StringUtils.join(resInts, " "));
+        resMap.put("red", num.intValue());
+        resMap.put("blue", num2);
+        return resMap;
     }
 
 
