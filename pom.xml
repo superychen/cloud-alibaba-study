@@ -17,6 +17,7 @@
         <module>CMDB-demo</module>
         <module>Sentinel-demo</module>
         <module>Skill-serv</module>
+        <module>Ad-serv</module>
     </modules>
 
     <parent>

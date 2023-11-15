@@ -60,8 +60,8 @@ public class OrderController {
 
     public static void main(String[] args) {
         //第一期开奖号码
-        List<Integer> compareBlueInts = Lists.newArrayList(8,9,12,17,32,33);
-        int redInt = 4;
+        List<Integer> compareBlueInts = Lists.newArrayList(6,7,14,20,26,32);
+        int redInt = 1;
         Long num = 0L;
         Map<String, Integer> map = caiPiaoCompute(compareBlueInts, redInt, num);
         for (int i = 0; i < 10; i++) {
