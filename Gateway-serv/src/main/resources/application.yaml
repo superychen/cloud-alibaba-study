@@ -1,0 +1,32 @@
+server:
+  port: 8081
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: product
+          #uri: http://localhost:9000
+          uri: lb://product-serv #这里直接使用注册中心的服务名称，lb代表轮询的方式
+          predicates:
+            - Host=product.cqyc.com** #断言：当访问product.cqyc.com路径的，都会走localhost:9000端口
+
+        - id: auth_v1 #这里的服务因为资料不全，就没有这个服务，其实就是生成一个accessToken的服务而已
+          uri: http://localhost:5000
+          predicates:
+            - Path=/oauth/token #就是这个/oauth/token的路径会被路由到auth这个服务
+            - Weight=auth_v1, 95 #实现金丝雀发布，让启动时，让95%的流量打到auth_v1这个id上
+        - id: auth_v2 #也是auth服务
+          uri:  http://localhost:5000
+          predicates:
+            - Path=/oauth/token
+            - Weight=auth_v2, 5 #金丝雀发布，启动时，5%的流量打到auth_v2上
+
+        - id: skill #秒杀服务
+          uri: http://localhost:13000
+          predicates:
+            - Path=/skill #同上述所说
+  datasource:
+    url: jdbc:/mysql://localhost:3306/skill
+    username: root
+    password: 123456
+    driverClassName: com.mysql.cj.jdbc.Driver
